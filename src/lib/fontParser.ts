@@ -68,7 +68,6 @@ export function parseCFont(code: string): FontDef | null {
   if (!name || !totalChars || !width) return null
 
   // 2) Parse glyphs inside the array initializer until the matching '}'
-  const glyphs: CharacterDef[] = []
   let level = 1 // we are after the first '{'
   // We'll collect rows like { 0x00, 0x01, ... }
   const rows: number[][] = []
