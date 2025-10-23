@@ -59,7 +59,8 @@ export default function HomePage() {
         <div className="flex flex-col flex-1 overflow-hidden pl-1">
           {/* Fixed details + editor */}
           <div className="flex-shrink-0">
-            <FontDefDetails font={font} />
+            <FontDefDetails font={font} onChange={handleFontChange} />
+
           </div>
 
           <div className="flex-shrink-0 mt-4">
