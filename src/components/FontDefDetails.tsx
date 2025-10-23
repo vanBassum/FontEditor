@@ -11,7 +11,7 @@ interface FontDefDetailsProps {
 }
 
 export function FontDefDetails({ font, onChange }: FontDefDetailsProps) {
-  const handleTextChange = (key: "name") => (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.trim()
     if (value.length === 0) return
     onChange({
@@ -74,7 +74,7 @@ export function FontDefDetails({ font, onChange }: FontDefDetailsProps) {
           <Input
             type="text"
             value={font.name}
-            onChange={handleTextChange("name")}
+            onChange={handleTextChange}
             placeholder="Font5x7"
           />
         </div>
