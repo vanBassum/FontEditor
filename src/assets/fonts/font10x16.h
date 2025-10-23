@@ -1,0 +1,17 @@
+#pragma once
+#include <stdint.h>
+#include "FontDef.h"
+
+// Large test font
+static const uint8_t font10x16_charset[2][10] = {
+    { 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 }, // ' ' (32)
+    { 0x18,0x3C,0x3C,0x18,0x18,0x18,0x00,0x18,0x00,0x00 }, // '!' (33)
+};
+
+static const FontDef font10x16 = {
+    .table = (const uint8_t*)font10x16_charset,
+    .width = 10,
+    .height = 16,
+    .firstChar = 32,
+    .lastChar = 33,
+};
