@@ -1,6 +1,6 @@
 export interface CharacterDef {
-    code: number // ASCII code
-    bytes: number[] // each column byte
+    code: number
+    bytes: number[]
   }
   
   export interface FontDef {
