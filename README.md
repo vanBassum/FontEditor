@@ -1,81 +1,139 @@
-# 🔥 Firefly UI
+Here’s a polished `README.md` that matches your project setup, conventions, and UI structure 👇
+# 🖋️ FontEditor
 
-The **Firefly UI** is the React frontend of the Firefly project.  
-It connects to a [firefly-host](https://github.com/KooleControls/firefly-host) ESP32 over Wi-Fi and visualizes activity from multiple [firefly-guest](https://github.com/KooleControls/firefly-guest) ESP32-C3 boards.
+👉 **Live Demo:** [https://vanbassum.github.io/FontEditor/](https://vanbassum.github.io/FontEditor/)
 
-- View live logs of button presses from guest devices  
-- Trigger LED blinks on one or more boards  
-- Explore how embedded systems and modern web UIs can interact seamlessly  
+FontEditor is a browser-based tool for creating and editing custom bitmap fonts used in embedded C applications.  
+It’s built with **React**, **TypeScript**, **Vite**, and **shadcn/ui**, and automatically deploys to **GitHub Pages** from the `main` branch.
 
-Built with **Vite**, **TypeScript**, and **shadcn/ui**.
+---
+
+## ✨ Features
+
+- 🧠 **Live bidirectional editing**  
+  Update C font code directly or modify glyphs visually — both stay in sync.
+
+- 🎨 **Pixel-perfect glyph editor**  
+  Edit characters using a grid-based pixel interface (with optional grid overlay).
+
+- 🔤 **Interactive character list**  
+  Add, delete, select, and drag characters to reorder them.
+
+- 🧩 **Preview panel**  
+  Type text to see how it renders with your custom font.
+
+- ⚡ **Real-time parsing and validation**  
+  The parser reads `FontDef` C structures, with error highlighting when syntax is invalid.
+
+- 🪶 **Responsive layout**  
+  The entire UI fits neatly on one screen — no window scroll, only internal card scrolling.
+
+---
+
+## 🧱 Tech Stack
+
+| Category | Technology |
+|-----------|-------------|
+| Framework | [React](https://react.dev/) + [Vite](https://vitejs.dev/) |
+| Language | TypeScript |
+| UI Library | [shadcn/ui](https://ui.shadcn.com/) + Tailwind CSS |
+| Deployment | GitHub Pages via GitHub Actions |
+| State Management | Local React state (hooks) |
+| Parsing | Custom C font lexer & serializer (`parseCFont` / `toCFont`) |
+
+---
+
+## 🧰 Project Structure
+
+```
+
+src/
+├─ components/
+│  ├─ FontCodeEditor.tsx        # C code editor with bidirectional sync
+│  ├─ FontCharacterList.tsx     # Scrollable, draggable list of characters
+│  ├─ FontCharacterEditor.tsx   # Pixel grid editor for selected character
+│  ├─ FontPreviewCard.tsx       # Live text preview
+│  ├─ FontDefDetails.tsx        # Displays FontDef parameters
+│  └─ FontCharacterIcon.tsx     # Renders single glyph at small scale
+│
+├─ lib/
+│  └─ fontParser.ts             # parseCFont() + toCFont() utilities
+│
+├─ types/
+│  └─ font.ts                   # FontDef and CharacterDef interfaces
+│
+├─ pages/
+│  └─ HomePage.tsx              # Main layout combining all components
+│
+└─ App.tsx                      # Root layout with sidebar & header
+
+```
 
 ---
 
 ## 🚀 Getting Started
 
-### Prerequisites
-- Node.js (>= 18)
-- npm, pnpm, or yarn
+### 1️⃣ Clone and install
 
-### Install & Run
 ```bash
-# Clone this repo
-git clone https://github.com/KooleControls/firefly-ui.git
-cd firefly-ui
-
-# Install dependencies
+git clone https://github.com/vanbassum/FontEditor.git
+cd FontEditor
 npm install
+````
 
-# Start dev server
+### 2️⃣ Run locally
+
+```bash
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173) to view the UI.
+Open [http://localhost:5173](http://localhost:5173)
 
----
-
-## 📦 Build for Deployment
-
-The Firefly host expects **pre-compressed files** (gzip) for efficient serving.
+### 3️⃣ Build for production
 
 ```bash
-# Build optimized production bundle with gzip
-npm run buildgz
+npm run build
+npm run preview
 ```
 
-This produces `.gz` files inside the `dist/` directory.  
-Later, these can be uploaded to the [firefly-host](https://github.com/KooleControls/firefly-host) ESP32 (e.g. via FTP or OTA) so the webserver can serve them directly.
+---
+
+## 🔧 Deployment
+
+The project is deployed automatically via GitHub Actions.
+
+* Pushes to the `main` branch trigger a build.
+* The build output from `/dist` is published to the `gh-pages` branch.
+* Hosted at **[https://vanbassum.github.io/FontEditor/](https://vanbassum.github.io/FontEditor/)**.
 
 ---
 
-## 🧩 How to Play
+## 🧩 Font Format
 
-1. Flash the [firefly-host](https://github.com/KooleControls/firefly-host) firmware onto an ESP32.  
-   - The host runs a small web server and bridges communication with guest devices via ESP-NOW.  
+The editor supports simple ASCII fonts defined in C as:
 
-2. Flash the [firefly-guest](https://github.com/KooleControls/firefly-guest) firmware onto one or more ESP32-C3 boards.  
-   - Each guest has a button and LED.  
-   - Pressing the button sends an event to the host.  
+```c
+#pragma once
+#include <stdint.h>
+#include "FontDef.h"
 
-3. Connect your computer/phone to the same Wi-Fi network as the host ESP32.  
-   - Open the Firefly UI (served by the host, or run locally).  
-   - Watch events roll in live.  
-   - Use the UI controls to blink LEDs on specific guest boards.  
+static const uint8_t font5x7[96][5] = {
+    {0x00,0x00,0x00,0x00,0x00}, // ' '
+    {0x00,0x00,0x5F,0x00,0x00}, // '!'
+    ...
+};
 
----
-
-## 🛠 Tech Stack
-- ⚡ [Vite](https://vitejs.dev/) – fast dev build tool  
-- 🟦 [TypeScript](https://www.typescriptlang.org/) – type safety  
-- 🎨 [shadcn/ui](https://ui.shadcn.com/) – modern React components  
-- 📡 Fetch API – communicates with the host ESP32’s REST endpoints  
-
----
-
-## 📚 Related Repos
-- [firefly-host](https://github.com/KooleControls/firefly-host) – ESP32 firmware for the host  
-- [firefly-guest](https://github.com/KooleControls/firefly-guest) – ESP32-C3 firmware for the guests  
+static const FontDef Font5x7 = {
+    .table = (const uint8_t*)font5x7,
+    .width = 5,
+    .height = 7,
+    .firstChar = 32,
+    .lastChar = 127,
+};
+```
 
 ---
 
-✨ Firefly is part of the [KooleControls](https://github.com/KooleControls) collection of projects for exploring embedded systems, wireless communication, and modern web development.
+## 📜 License
+
+MIT © 2025 [vanbassum](https://github.com/vanbassum)
