@@ -2,8 +2,8 @@ name: Deploy to GitHub Pages on tag
 
 on:
   push:
-    tags:
-      - 'v*'            # triggers on tags like v1.0.0, v2.3.4
+    branches:
+      - main 
 
 permissions:
   contents: read
