@@ -1,0 +1,188 @@
+import { tokenizeC, type Token } from "@/lib/fontLexer"
+import { type FontDef, type CharacterDef } from "@/types/font"
+
+function tokVal(t?: Token) {
+  return t ? t.value : ""
+}
+function isIdent(t?: Token, v?: string) {
+  return !!t && t.type === "ident" && (v ? t.value === v : true)
+}
+function isNum(t?: Token) {
+  return !!t && t.type === "number"
+}
+function numValue(t: Token): number {
+  const v = t.value
+  return /^0x/i.test(v) ? parseInt(v, 16) : parseInt(v, 10)
+}
+
+export function parseCFont(code: string): FontDef | null {
+  const tokens = tokenizeC(code)
+  let i = 0
+  const n = tokens.length
+  const peek = (k = 0) => (i + k < n ? tokens[i + k] : undefined)
+  const next = () => (i < n ? tokens[i++] : undefined)
+
+  // 1) Find: static const uint8_t <name> [N] [W] = {
+  // We'll be tolerant but require the 'uint8_t' sequence + array dims + '=' + '{'
+  let name = ""
+  let totalChars = 0
+  let width = 0
+
+  while (i < n) {
+    const t = peek()
+    if (isIdent(t, "uint8_t")) {
+      // expect name
+      next() // 'uint8_t'
+      const tName = next()
+      if (!isIdent(tName)) break
+      name = tokVal(tName)
+
+      // [ totalChars ]
+      if (peek()?.type !== "lbracket") break
+      next()
+      const tN = next()
+      if (!isNum(tN)) break
+      totalChars = numValue(tN!)
+      if (next()?.type !== "rbracket") break
+
+      // [ width ]
+      if (next()?.type !== "lbracket") break
+      const tW = next()
+      if (!isNum(tW)) break
+      width = numValue(tW!)
+      if (next()?.type !== "rbracket") break
+
+      // = {
+      while (peek() && peek()!.type !== "equal") next()
+      if (peek()?.type !== "equal") break
+      next() // '='
+      if (peek()?.type !== "lbrace") break
+      next() // '{' -> start of array initializer
+
+      // we’re positioned at the start of the initializer body
+      break
+    }
+    i++
+  }
+
+  if (!name || !totalChars || !width) return null
+
+  // 2) Parse glyphs inside the array initializer until the matching '}'
+  const glyphs: CharacterDef[] = []
+  let level = 1 // we are after the first '{'
+  // We'll collect rows like { 0x00, 0x01, ... }
+  const rows: number[][] = []
+
+  while (i < n && level > 0) {
+    const t = next()
+    if (!t) break
+
+    if (t.type === "lbrace" && level === 1) {
+      // start of a glyph row
+      const bytes: number[] = []
+      // read numbers until matching '}'
+      while (i < n) {
+        const u = next()
+        if (!u) break
+        if (u.type === "rbrace") {
+          rows.push(bytes)
+          break
+        }
+        if (u.type === "number") {
+          bytes.push(numValue(u))
+          // optional comma will be consumed in loop naturally
+        }
+      }
+      continue
+    }
+
+    if (t.type === "lbrace") {
+      level++
+      continue
+    }
+    if (t.type === "rbrace") {
+      level--
+      continue
+    }
+  }
+
+  // 3) Read struct values (.width, .height, .firstChar, .lastChar) if present
+  //    We'll scan the whole token list for simple `.field = number` patterns.
+  let height = 7
+  let firstChar = 32
+  let lastChar = firstChar + rows.length - 1
+
+  for (let k = 0; k < n - 3; k++) {
+    const a = tokens[k]
+    const b = tokens[k + 1]
+    const c = tokens[k + 2]
+    const d = tokens[k + 3]
+    if (a.type === "dot" && isIdent(b) && c?.type === "equal" && isNum(d)) {
+      const val = numValue(d)
+      switch (b!.value) {
+        case "width":
+          // trust array width more than struct width, but keep consistent if provided
+          width = width || val
+          break
+        case "height":
+          height = val
+          break
+        case "firstChar":
+          firstChar = val
+          break
+        case "lastChar":
+          lastChar = val
+          break
+      }
+    }
+  }
+
+  // 4) Build characters aligned to firstChar..lastChar using parsed rows
+  // Ensure we keep exactly totalChars rows (pad/trim defensively)
+  const fixedRows = rows.slice(0, totalChars)
+  while (fixedRows.length < totalChars) fixedRows.push(new Array(width).fill(0))
+
+  const characters: CharacterDef[] = fixedRows.map((bytes, idx) => ({
+    code: firstChar + idx,
+    bytes: bytes.slice(0, width),
+  }))
+
+  // Finalize lastChar based on data if struct omitted it
+  if (lastChar < firstChar || lastChar !== firstChar + characters.length - 1) {
+    lastChar = firstChar + characters.length - 1
+  }
+
+  return { name, width, height, firstChar, lastChar, characters }
+}
+
+// (unchanged) Generate code from model
+export function toCFont(font: FontDef): string {
+  const { name, width, height, firstChar, lastChar, characters } = font
+
+  const header = `#pragma once
+#include <stdint.h>
+#include "FontDef.h"
+
+`
+  const arrayDecl = `static const uint8_t ${name}[${characters.length}][${width}] = {
+${characters
+  .map(
+    (ch) =>
+      `    {${ch.bytes
+        .map((b) => `0x${(b & 0xff).toString(16).toUpperCase().padStart(2, "0")}`)
+        .join(",")}}, // '${String.fromCharCode(ch.code)}' (${ch.code})`
+  )
+  .join("\n")}
+};
+
+`
+  const def = `static const FontDef Font5x7 = {
+    .table = (const uint8_t*)${name},
+    .width = ${width},
+    .height = ${height},
+    .firstChar = ${firstChar},
+    .lastChar = ${lastChar},
+};
+`
+  return header + arrayDecl + def
+}
