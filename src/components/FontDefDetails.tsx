@@ -4,13 +4,15 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { type FontDef } from "@/types/font"
+import { cn } from "@/lib/utils"
 
 interface FontDefDetailsProps {
   font: FontDef
+  className?: string
   onChange: (newFont: FontDef) => void
 }
 
-export function FontDefDetails({ font, onChange }: FontDefDetailsProps) {
+export function FontDefDetails({ font, className, onChange }: FontDefDetailsProps) {
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.trim()
     if (value.length === 0) return
@@ -63,14 +65,14 @@ export function FontDefDetails({ font, onChange }: FontDefDetailsProps) {
     }
 
   return (
-    <Card className="w-full">
+    <Card className={cn("w-full h-full flex flex-col", className)}>
       <CardHeader>
         <CardTitle>Font Definition</CardTitle>
       </CardHeader>
 
       <CardContent className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         <div className="flex flex-col space-y-1.5">
-          <Label>Font Name</Label>
+          <Label>Name</Label>
           <Input
             type="text"
             value={font.name}
@@ -80,7 +82,7 @@ export function FontDefDetails({ font, onChange }: FontDefDetailsProps) {
         </div>
 
         <div className="flex flex-col space-y-1.5">
-          <Label>Array Name</Label>
+          <Label>Array</Label>
           <Input
             type="text"
             value={`${font.name}_charset`}

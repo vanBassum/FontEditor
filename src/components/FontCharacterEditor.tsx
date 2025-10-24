@@ -3,10 +3,13 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { type FontDef } from "@/types/font"
+import { cn } from "@/lib/utils"
+import { FontCharacterBadge } from "./FontCharacterBadge"
 
 interface FontCharacterEditorProps {
   font: FontDef
   selectedCode: number | null
+  className?: string
   onChange: (newFont: FontDef) => void
 }
 
@@ -17,30 +20,21 @@ interface FontCharacterEditorProps {
 export function FontCharacterEditor({
   font,
   selectedCode,
+  className,
   onChange,
 }: FontCharacterEditorProps) {
   if (selectedCode == null)
     return (
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>Character Editor</CardTitle>
-        </CardHeader>
-        <CardContent className="text-gray-500 text-sm">
-          Select a character to edit.
-        </CardContent>
+      <Card className={cn("w-full h-full flex flex-col justify-center items-center text-gray-500 text-sm", className)}>
+        Select a character to edit.
       </Card>
     )
 
   const charIndex = font.characters.findIndex((c) => c.code === selectedCode)
   if (charIndex === -1)
     return (
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>Character Editor</CardTitle>
-        </CardHeader>
-        <CardContent className="text-gray-500 text-sm">
-          Character not found.
-        </CardContent>
+      <Card className={cn("w-full h-full flex flex-col justify-center items-center text-gray-500 text-sm", className)}>
+        Character not found.
       </Card>
     )
 
@@ -72,10 +66,11 @@ export function FontCharacterEditor({
   }
 
   return (
-    <Card className="w-full">
+    <Card className={cn("w-full h-full flex flex-col", className)}>
+      {/* Header stays fixed height */}
       <CardHeader className="flex flex-row justify-between items-center">
         <CardTitle>
-          Editing: '{String.fromCharCode(selectedCode)}' ({selectedCode})
+          <FontCharacterBadge code={selectedCode} />
         </CardTitle>
         <div className="flex gap-2">
           <Button size="sm" variant="outline" onClick={clearChar}>
@@ -87,7 +82,8 @@ export function FontCharacterEditor({
         </div>
       </CardHeader>
 
-      <CardContent>
+      {/* Content should grow */}
+      <CardContent className="flex-1 flex items-center justify-center overflow-auto">
         <div
           className="inline-grid border border-gray-300 bg-white"
           style={{
@@ -102,9 +98,10 @@ export function FontCharacterEditor({
                 <div
                   key={`${row}-${col}`}
                   onClick={() => togglePixel(col, row)}
-                  className={`w-[20px] h-[20px] border border-gray-200 cursor-pointer ${
+                  className={cn(
+                    "w-[20px] h-[20px] border border-gray-200 cursor-pointer transition-colors",
                     bitOn ? "bg-black" : "bg-white hover:bg-gray-100"
-                  }`}
+                  )}
                 />
               )
             })

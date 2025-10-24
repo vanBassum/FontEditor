@@ -15,9 +15,11 @@ import { parseCFont, toCFont } from "@/lib/fontParser"
 import { FontCodeHelpModal } from "./FontCodeHelpModal"
 import { HelpCircle } from "lucide-react"
 import { Button } from "./ui/button"
+import { cn } from "@/lib/utils"
 
 interface FontCodeEditorProps {
     value: FontDef
+    className?: string
     onChange: (newFont: FontDef) => void
     debounceMs?: number // default 100ms
 }
@@ -29,6 +31,7 @@ interface FontCodeEditorProps {
  */
 export function FontCodeEditor({
     value,
+    className,
     onChange,
     debounceMs = 100,
 }: FontCodeEditorProps) {
@@ -75,7 +78,7 @@ export function FontCodeEditor({
     }, [isEditing, code, debounceMs])
 
     return (
-        <Card className="w-full h-full flex flex-col">
+        <Card className={cn("w-full h-full flex flex-col", className)}>
             <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Font C Code</CardTitle>
                 <Button
