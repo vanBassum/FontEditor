@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Card, CardHeader, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
@@ -23,7 +23,7 @@ export function FontPreviewCard({
   pixelSize = 10,
   className,
 }: FontPreviewCardProps) {
-  const [text, setText] = useState("Hello!")
+  const [text, setText] = useState("Hello world!")
   const [showGrid, setShowGrid] = useState(true)
 
   const getGlyphByCode = (code: number) =>
